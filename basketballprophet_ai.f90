@@ -84,7 +84,7 @@ program BasketballProphet_AI
   end if
 
   write(*,'(a)') 'Neural Network-Based Sport Predictions'
-  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.1.1 11.12.2023'
+  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.1.1 12.12.2023'
   write(*,'(a)') 'Copyright © 2023-present, Piotr Bajdek'
   print *,''
   write(*,'(a,a,a,a)') 'Loaded file ', grey, arg_1, reset
