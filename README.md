@@ -6,6 +6,8 @@ Technically, version 0.3.0 of the program is built upon a modular neural network
 
 A valid test file should include two columns representing past scores in .csv format, with the most recent score at the bottom and a minimum of 24 records (more data is preferable for enhanced accuracy). Provide the file as a command line argument.
 
+![example-1](https://github.com/piotrbajdek/BasketballProphet_AI/blob/main/docs/images/example-1.png?raw=true)
+
 To compile the program, you can use gfortran with the following command:
 
 `gfortran basketballprophet_ai.f90 -o basketballprophet_ai`
