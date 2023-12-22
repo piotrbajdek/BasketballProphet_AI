@@ -2,7 +2,7 @@
 
 BasketballProphet AI is an artificial intelligence program designed to forecast basketball scores.  It has been tested on NBA and WNBA datasets, demonstrating an accuracy rate of around 3/4 for predicting winners in the NBA and 2/3 in the WNBA, with the expectation of further improvement in future versions of the program.
 
-Technically, version 0.2.0 of the program is built upon a modular neural network that utilises the Adam gradient descent optimisation algorithm and employs a simple element-wise dot-product attention. It predicts scores for each of the teams.
+Technically, version 0.3.0 of the program is built upon a modular neural network that utilises the Adam gradient descent optimisation algorithm and employs a simple element-wise dot-product attention. It predicts scores for each of the teams.
 
 A valid test file should include two columns representing past scores in .csv format, with the most recent score at the bottom and a minimum of 24 records (more data is preferable for enhanced accuracy). Provide the file as a command line argument.
 
