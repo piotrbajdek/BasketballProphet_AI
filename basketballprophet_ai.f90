@@ -178,7 +178,7 @@ program BasketballProphet_AI
   end if
 
   write(*,'(a)') 'Neural Network-Based Sport Predictions'
-  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.3.1 23.12.2023'
+  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.3.2 31.12.2023'
   write(*,'(a)') 'Copyright © 2023-present, Piotr Bajdek'
   print *,''
   write(*,'(a,a,a,a)') 'Loaded file ', grey, arg_1, reset
@@ -198,7 +198,12 @@ contains
 
   subroutine ai_3()
 
+  b_3 = 0.0_dp
+  db_3 = 0.0_dp
   w_3 = 0.0_dp
+  t_3 = 0.0_dp
+  mt_3 = 0.0_dp
+  t_3 = 0.0_dp
 
   allocate(attention_weights_3(seq_len, seq_len))
   attention_weights_3 = 0.0_dp
@@ -244,14 +249,16 @@ contains
       + w_3(3) * sequence(seq_len-4) &
       + b_3
 
-  b_3 = 0.0
-  db_3 = 0.0
-
   end subroutine ai_3
 
   subroutine ai_4()
 
+  b_4 = 0.0_dp
+  db_4 = 0.0_dp
   w_4 = 0.0_dp
+  t_4 = 0.0_dp
+  mt_4 = 0.0_dp
+  t_4 = 0.0_dp
 
   allocate(attention_weights_4(seq_len, seq_len))
   attention_weights_4 = 0.0_dp
@@ -300,14 +307,16 @@ contains
       + w_4(4) * sequence(seq_len-5) &
       + b_4
 
-  b_4 = 0.0
-  db_4 = 0.0
-
   end subroutine ai_4
 
   subroutine ai_7()
 
-  w = 0.0_dp
+  b_7 = 0.0_dp
+  db_7 = 0.0_dp
+  w_7 = 0.0_dp
+  t_7 = 0.0_dp
+  mt_7 = 0.0_dp
+  t_7 = 0.0_dp
 
   allocate(attention_weights_7(seq_len, seq_len))
   attention_weights_7 = 0.0_dp
@@ -365,14 +374,16 @@ contains
       + w_7(7) * sequence(seq_len-8) &
       + b_7
 
-  b_7 = 0.0
-  db_7 = 0.0
-
   end subroutine ai_7
 
   subroutine ai_8()
 
-  w = 0.0_dp
+  b_8 = 0.0_dp
+  db_8 = 0.0_dp
+  w_8 = 0.0_dp
+  t_8 = 0.0_dp
+  mt_8 = 0.0_dp
+  t_8 = 0.0_dp
 
   allocate(attention_weights_8(seq_len, seq_len))
   attention_weights_8 = 0.0_dp
@@ -432,9 +443,6 @@ contains
       + w_8(7) * sequence(seq_len-8) &
       + w_8(8) * sequence(seq_len-9) &
       + b_8
-
-  b_8 = 0.0
-  db_8 = 0.0
 
   end subroutine ai_8
 
