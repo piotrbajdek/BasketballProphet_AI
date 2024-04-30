@@ -1,36 +1,39 @@
 ! BSD 3-Clause No Military License
 ! Copyright © 2023-present, Piotr Bajdek
 
+! gfortran -Ofast -march=native basketballprophet_ai.f90 -o basketballprophet_ai
+
 program BasketballProphet_AI
 
-  character(len=256) :: arg_1
+  implicit none
+  character(len=68) :: arg_1
   character(256) :: line
+  character(len=3) :: st_h_0, st_l_0, st_h_1, st_l_1
   integer, parameter :: dp = selected_real_kind(15, 307)
-  real(dp), dimension(:,:), allocatable :: attention_weights_3
-  real(dp), dimension(:,:), allocatable :: attention_weights_4
-  real(dp), dimension(:,:), allocatable :: attention_weights_7
-  real(dp), dimension(:,:), allocatable :: attention_weights_8
+  integer, parameter :: qp = selected_real_kind(33, 4931)
+  real(dp), dimension(:,:), allocatable :: attention_weights_6
   real(dp), dimension(:), allocatable :: sequence_1, sequence_2
-  real(dp), dimension(:), allocatable :: sequence
-  real(dp), dimension(3) :: w_3, dw_3
-  real(dp), dimension(4) :: w_4, dw_4
-  real(dp), dimension(7) :: w_7, dw_7
-  real(dp), dimension(8) :: w_8, dw_8
-  real(dp) :: b_3 = 0.0_dp, alpha_3 = 0.001_dp, beta1_3 = 0.9_dp, beta2_3 = 0.999_dp, t_3 = 0.0_dp
-  real(dp) :: b_4 = 0.0_dp, alpha_4 = 0.001_dp, beta1_4 = 0.9_dp, beta2_4 = 0.999_dp, t_4 = 0.0_dp
-  real(dp) :: b_7 = 0.0_dp, alpha_7 = 0.001_dp, beta1_7 = 0.9_dp, beta2_7 = 0.999_dp, t_7 = 0.0_dp
-  real(dp) :: b_8 = 0.0_dp, alpha_8 = 0.001_dp, beta1_8 = 0.9_dp, beta2_8 = 0.999_dp, t_8 = 0.0_dp
-  real(dp) :: mt_3(3) = 0.0_dp, vt_3(3) = 0.0_dp, m_hat_3(3), v_hat_3(3), denom_3(3)
-  real(dp) :: mt_4(4) = 0.0_dp, vt_4(4) = 0.0_dp, m_hat_4(4), v_hat_4(4), denom_4(4)
-  real(dp) :: mt_7(7) = 0.0_dp, vt_7(7) = 0.0_dp, m_hat_7(7), v_hat_7(7), denom_7(7)
-  real(dp) :: mt_8(8) = 0.0_dp, vt_8(8) = 0.0_dp, m_hat_8(8), v_hat_8(8), denom_8(8)
-  real(dp) :: db_3, y_pred_3, error_3, db_4, y_pred_4, error_4
-  real(dp) :: db_7, y_pred_7, error_7, db_8, y_pred_8, error_8
+  real(dp), dimension(:), allocatable :: sequence, sequence_3
+  real(dp), dimension(6) :: w_6, dw_6
+  real(dp) :: b_6 = 0.0_dp, alpha_6 = 0.001_dp, beta1_6 = 0.9_dp, beta2_6 = 0.999_dp, t_6 = 0.0_dp
+  real(dp) :: mt_6(6) = 0.0_dp, vt_6(6) = 0.0_dp, m_hat_6(6), v_hat_6(6), denom_6(6)
+  real(dp) :: db_6, y_pred_6, error_6
   real(dp) :: epsilon = 1.0E-8_dp
   integer :: i, j, iostat, seq_len, iterations = 12500
-  real :: result_1_3, result_2_3, result_1_4, result_2_4
-  real :: result_1_7, result_2_7, result_1_8, result_2_8
-  real :: result_1, result_2
+  real :: result_1_6, result_2_6
+  real(qp) :: ost_0, ost_1, ost_2, ost_3, ost_4, ost_5, ost_6, ost_7, ost_8
+  real(qp) :: tr_0, tr_1, tr_2, tr_3, tr_4, tr_5, tr_6, tr_7
+  real(qp) :: atr_2, atr_3, atr_4, atr_5, atr_6
+  real(qp) :: atr_2_ex1, atr_3_ex1, atr_4_ex1, atr_5_ex1, atr_6_ex1
+  real(qp) :: atr_2_ex2, atr_3_ex2, atr_4_ex2, atr_5_ex2, atr_6_ex2
+  real(qp) :: rwi_h_2, rwi_h_3, rwi_h_4, rwi_h_5, rwi_h_6
+  real(qp) :: rwi_l_2, rwi_l_3, rwi_l_4, rwi_l_5, rwi_l_6
+  real(qp) :: rwi_h_2_ex1, rwi_h_3_ex1, rwi_h_4_ex1, rwi_h_5_ex1, rwi_h_6_ex1, rwi_h_7_ex1, rwi_h_8_ex1, rwi_h_9_ex1
+  real(qp) :: rwi_l_2_ex1, rwi_l_3_ex1, rwi_l_4_ex1, rwi_l_5_ex1, rwi_l_6_ex1, rwi_l_7_ex1, rwi_l_8_ex1, rwi_l_9_ex1
+  real(qp) :: rwi_h_2_ex2, rwi_h_3_ex2, rwi_h_4_ex2, rwi_h_5_ex2, rwi_h_6_ex2, rwi_h_7_ex2, rwi_h_8_ex2, rwi_h_9_ex2
+  real(qp) :: rwi_l_2_ex2, rwi_l_3_ex2, rwi_l_4_ex2, rwi_l_5_ex2, rwi_l_6_ex2, rwi_l_7_ex2, rwi_l_8_ex2, rwi_l_9_ex2
+  real(qp) :: rwi_h_6_0, rwi_l_6_0, rwi_h_6_1, rwi_l_6_1, rwi_h_6_2, rwi_l_6_2
+  real(dp) :: high_6, low_6, high_6_1, low_6_1, high_6_2, low_6_2, k_0, k_1, k_2, so_6
 
   character(len=4) :: reset = ''//achar(27)//'[0m'
   character(len=5) :: red = ''//achar(27)//'[31m'
@@ -38,9 +41,7 @@ program BasketballProphet_AI
   character(len=5) :: brown = ''//achar(27)//'[33m'
   character(len=11) :: grey = ''//achar(27)//'[38;5;246m'
 
-  character(len=5) :: a_col_3, b_col_3, a_col_4, b_col_4
-  character(len=5) :: a_col_7, b_col_7, a_col_8, b_col_8
-  character(len=5) :: a_col, b_col
+  character(len=5) :: a_col_6, b_col_6, kol_h_0, kol_l_0, kol_h_1, kol_l_1, kol_so_6
 
   if (command_argument_count() == 0) then
     write(*,'(a)') 'No input file selected!'
@@ -60,6 +61,7 @@ program BasketballProphet_AI
 
   allocate(sequence_1(seq_len))
   allocate(sequence_2(seq_len))
+  allocate(sequence_3(seq_len))
 
   rewind(10)
 
@@ -80,370 +82,332 @@ program BasketballProphet_AI
   end if
 
   sequence = sequence_1
-    call ai_3()
-  result_1_3 = y_pred_3
-    deallocate(attention_weights_3)
+    call ai()
+  result_1_6 = y_pred_6
+    deallocate(attention_weights_6)
 
   sequence = sequence_2
-    call ai_3()
-  result_2_3 = y_pred_3
-    deallocate(attention_weights_3)
+    call ai()
+  result_2_6 = y_pred_6
+    deallocate(attention_weights_6)
 
-  if (result_1_3 > result_2_3) then
-    a_col_3 = green
-    b_col_3 = red
-  else if (result_1_3 < result_2_3) then
-    a_col_3 = red
-    b_col_3 = green
+  if (result_1_6 > result_2_6) then
+    a_col_6 = green
+    b_col_6 = red
+  else if (result_1_6 < result_2_6) then
+    a_col_6 = red
+    b_col_6 = green
   else
-    a_col_3 = brown
-    b_col_3 = brown
+    a_col_6 = brown
+    b_col_6 = brown
   end if
 
-  sequence = sequence_1
-    call ai_4()
-  result_1_4 = y_pred_4
-    deallocate(attention_weights_4)
+sequence_3 = sequence_1 / sequence_2
 
-  sequence = sequence_2
-    call ai_4()
-  result_2_4 = y_pred_4
-    deallocate(attention_weights_4)
+  deallocate(sequence_1, sequence_2)
 
-  if (result_1_4 > result_2_4) then
-    a_col_4 = green
-    b_col_4 = red
-  else if (result_1_4 < result_2_4) then
-    a_col_4 = red
-    b_col_4 = green
-  else
-    a_col_4 = brown
-    b_col_4 = brown
-  end if
+    call rwi()
 
-  sequence = sequence_1
-    call ai_7()
-  result_1_7 = y_pred_7
-    deallocate(attention_weights_7)
-
-  sequence = sequence_2
-    call ai_7()
-  result_2_7 = y_pred_7
-    deallocate(attention_weights_7)
-
-  if (result_1_7 > result_2_7) then
-    a_col_7 = green
-    b_col_7 = red
-  else if (result_1_7 < result_2_7) then
-    a_col_7 = red
-    b_col_7 = green
-  else
-    a_col_7 = brown
-    b_col_7 = brown
-  end if
-
-  sequence = sequence_1
-    call ai_8()
-  result_1_8 = y_pred_8
-    deallocate(sequence_1, attention_weights_8)
-
-  sequence = sequence_2
-    call ai_8()
-  result_2_8 = y_pred_8
-    deallocate(sequence_2, attention_weights_8)
-
-  if (result_1_8 > result_2_8) then
-    a_col_8 = green
-    b_col_8 = red
-  else if (result_1_8 < result_2_8) then
-    a_col_8 = red
-    b_col_8 = green
-  else
-    a_col_8 = brown
-    b_col_8 = brown
-  end if
-
-  result_1 = (result_1_3 + result_1_4 + result_1_7 + result_1_8) / 4
-  result_2 = (result_2_3 + result_2_4 + result_2_7 + result_2_8) / 4
-
-  if (result_1 > result_2) then
-    a_col = green
-    b_col = red
-  else if (result_1 < result_2) then
-    a_col = red
-    b_col = green
-  else
-    a_col = brown
-    b_col = brown
-  end if
+  deallocate(sequence_3)
 
   write(*,'(a)') 'Neural Network-Based Sport Predictions'
-  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.3.2 31.12.2023'
+  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.4.0 30.04.2024'
   write(*,'(a)') 'Copyright © 2023-present, Piotr Bajdek'
   print *,''
   write(*,'(a,a,a,a)') 'Loaded file ', grey, arg_1, reset
-  write(*,'(a,a,I4,a,a,a,I4,a,a)') 'Next score:', a_col_3, nint(result_1_3), reset, ' :', b_col_3, nint(result_2_3), reset, &
-  ' (3 last scs.) 🏀'
-  write(*,'(a,a,I4,a,a,a,I4,a,a)') 'Next score:', a_col_4, nint(result_1_4), reset, ' :', b_col_4, nint(result_2_4), reset, &
-  ' (4 last scs.) 🏀'
-  write(*,'(a,a,I4,a,a,a,I4,a,a)') 'Next score:', a_col_7, nint(result_1_7), reset, ' :', b_col_7, nint(result_2_7), reset, &
-  ' (7 last scs.) 🏀'
-  write(*,'(a,a,I4,a,a,a,I4,a,a)') 'Next score:', a_col_8, nint(result_1_8), reset, ' :', b_col_8, nint(result_2_8), reset, &
-  ' (8 last scs.) 🏀'
+  write(*,'(a,a,a,a,a,a,a,a)') '                   ', a_col_6, 'A', reset, '     ', b_col_6, 'B', reset
+  write(*,'(a,a,I4,a,a,a,I4,a,a)') 'Predicted score:', a_col_6, nint(result_1_6), reset, ' :', b_col_6, nint(result_2_6), reset, &
+  ' (6 neurons)'
+
+ if (rwi_h_6_0 > rwi_h_6_1) then
+  kol_h_0 = green
+  st_h_0 = '↑'
+else if (rwi_h_6_0 < rwi_h_6_1) then
+  kol_h_0 = red
+  st_h_0 = '↓'
+else
+  kol_h_0 = brown
+  st_h_0 = '↕'
+end if
+
+if (rwi_l_6_0 > rwi_l_6_1) then
+  kol_l_0 = green
+  st_l_0 = '↑'
+else if (rwi_l_6_0 < rwi_l_6_1) then
+  kol_l_0 = red
+  st_l_0 = '↓'
+else
+  kol_l_0 = brown
+  st_l_0 = '↕'
+end if
+
+if (rwi_h_6_1 > rwi_h_6_2) then
+  kol_h_1 = green
+  st_h_1 = '↑'
+else if (rwi_h_6_1 < rwi_h_6_2) then
+  kol_h_1 = red
+  st_h_1 = '↓'
+else
+  kol_h_1 = brown
+  st_h_1 = '↕'
+end if
+
+if (rwi_l_6_1 > rwi_l_6_2) then
+  kol_l_1 = green
+  st_l_1 = '↑'
+else if (rwi_l_6_1 < rwi_l_6_2) then
+  kol_l_1 = red
+  st_l_1 = '↓'
+else
+  kol_l_1 = brown
+  st_l_1 = '↕'
+end if
+
   print *,''
-  write(*,'(a,a,I4,a,a,a,I4,a,a)') 'Next score:', a_col, nint(result_1), reset, ' :', b_col, nint(result_2), reset, &
-  ' avg. predict. 🏆'
+
+if (rwi_h_6_0 > 0.0 .and. rwi_h_6_0 < 1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (present): 0', rwi_h_6_0, '  ', kol_h_0, st_h_0, reset
+else
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (present): ', rwi_h_6_0, '  ', kol_h_0, st_h_0, reset
+end if
+
+if (rwi_l_6_0 > 0.0 .and. rwi_l_6_0 < 1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (present): 0', rwi_l_6_0, '  ', kol_l_0, st_l_0, reset
+else
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (present): ', rwi_l_6_0, '  ', kol_l_0, st_l_0, reset
+end if
+
+if (rwi_h_6_1 > 0.0 .and. rwi_h_6_1 < 1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -1): 0', rwi_h_6_1, '  ',  kol_h_1, st_h_1, reset
+else
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -1): ', rwi_h_6_1, '  ',  kol_h_1, st_h_1, reset
+end if
+
+if (rwi_l_6_1 > 0.0 .and. rwi_l_6_1 < 1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -1): 0', rwi_l_6_1, '  ', kol_l_1, st_l_1, reset
+else
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -1): ', rwi_l_6_1, '  ', kol_l_1, st_l_1, reset
+end if
+
+if (rwi_h_6_2 > 0.0 .and. rwi_h_6_2 < 1.0) then
+  write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -2): 0', rwi_h_6_2
+else
+  write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -2): ', rwi_h_6_2
+end if
+
+if (rwi_l_6_2 > 0.0 .and. rwi_l_6_2 < 1.0) then
+  write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -2): 0', rwi_l_6_2
+else
+  write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -2): ', rwi_l_6_2
+end if
+
+    call so()
+
+  print *,''
+
+if (so_6 < 50.0) then
+  kol_so_6 = green
+else if (so_6 > 50.0) then
+  kol_so_6 = red
+else
+  kol_so_6 = brown
+end if
+
+if (so_6 < 10.0) then
+  write(*,'(a,a,F0.5,a,a)') 'Stochastic oscillator 6(3): ', kol_so_6, so_6, reset, ' 🏀'
+else
+  write(*,'(a,a,F0.4,a,a)') 'Stochastic oscillator 6(3): ', kol_so_6, so_6, reset, ' 🏀'
+end if
+
+  print *,''
+
+if (result_1_6 > result_2_6 .and. &
+    (so_6 < 50.0 .or. rwi_h_6_0 > rwi_l_6_0) .and. &
+    so_6 < 85.0 .and. &
+    (so_6 < 60 .or. rwi_h_6_0 > 1.0) .and. &
+    (rwi_h_6_2 > 0.0 .or. rwi_h_6_1 > 1.0) .and. &
+    rwi_h_6_0 > -0.5 .and. rwi_h_6_1 > -0.5) then
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'A', reset, ' >85% prob. 🏆'
+else if (result_1_6 < result_2_6 .and. &
+    (so_6 > 50.0 .or. rwi_l_6_0 > rwi_h_6_0) .and. &
+    so_6 > 15.0 .and. &
+    (so_6 > 40.0 .or. rwi_l_6_0 > 1.0) .and. &
+    (rwi_l_6_2 > 0.0 .or. rwi_l_6_1 > 1.0) .and. &
+    rwi_l_6_0 > -0.5 .and. rwi_l_6_1 > -0.5) then
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'B', reset, ' >85% prob. 🏆'
+else
+  write(*,'(a)') 'Predicted winner: uncertain'
+end if
 
 contains
 
-  subroutine ai_3()
+  subroutine ai()
 
-  b_3 = 0.0_dp
-  db_3 = 0.0_dp
-  w_3 = 0.0_dp
-  t_3 = 0.0_dp
-  mt_3 = 0.0_dp
-  t_3 = 0.0_dp
+  b_6 = 0.0_dp
+  db_6 = 0.0_dp
+  w_6 = 0.0_dp
+  t_6 = 0.0_dp
+  mt_6 = 0.0_dp
+  t_6 = 0.0_dp
 
-  allocate(attention_weights_3(seq_len, seq_len))
-  attention_weights_3 = 0.0_dp
-
-  do i=1, iterations
-
-      dw_3 = 0.0_dp
-
-      do j = 1, seq_len
-        attention_weights_3(:, j) = sequence(j) * sequence(:)
-      end do
-
-      attention_weights_3 = attention_weights_3 / real(seq_len)
-
-      do j=4, seq_len
-          y_pred_3 = w_3(1) * sequence(j-2) &
-          + w_3(2) * sequence(j-3) &
-          + w_3(3) * sequence(j-4) &
-          + b_3
-          error_3 = y_pred_3 - sequence(j)
-          dw_3(1) = dw_3(1) + error_3 * sequence(j-2) * attention_weights_3(j-2, j)
-          dw_3(2) = dw_3(2) + error_3 * sequence(j-3) * attention_weights_3(j-3, j)
-          dw_3(3) = dw_3(3) + error_3 * sequence(j-4) * attention_weights_3(j-4, j)
-          db_3 = db_3 + error_3
-      end do
-
-      dw_3 = dw_3 / (seq_len - 3)
-      db_3 = db_3 / (seq_len - 3)
-
-      t_3 = t_3 + 1.0_dp
-      mt_3 = beta1_3 * mt_3 + (1.0_dp - beta1_3) * dw_3
-      vt_3 = beta2_3 * vt_3 + (1.0_dp - beta2_3) * (dw_3**2)
-      m_hat_3 = mt_3 / (1.0_dp - beta1_3**t_3)
-      v_hat_3 = vt_3 / (1.0_dp - beta2_3**t_3)
-      denom_3 = sqrt(v_hat_3) + epsilon
-      w_3 = w_3 - alpha_3 * m_hat_3 / denom_3
-      b_3 = b_3 - alpha_3 * db_3
-
-  end do
-
-  y_pred_3 = w_3(1) * sequence(seq_len-2) &
-      + w_3(2) * sequence(seq_len-3) &
-      + w_3(3) * sequence(seq_len-4) &
-      + b_3
-
-  end subroutine ai_3
-
-  subroutine ai_4()
-
-  b_4 = 0.0_dp
-  db_4 = 0.0_dp
-  w_4 = 0.0_dp
-  t_4 = 0.0_dp
-  mt_4 = 0.0_dp
-  t_4 = 0.0_dp
-
-  allocate(attention_weights_4(seq_len, seq_len))
-  attention_weights_4 = 0.0_dp
+  allocate(attention_weights_6(seq_len, seq_len))
+  attention_weights_6 = 0.0_dp
 
   do i=1, iterations
 
-      dw_4 = 0.0_dp
+      dw_6 = 0.0_dp
 
       do j = 1, seq_len
-        attention_weights_4(:, j) = sequence(j) * sequence(:)
+        attention_weights_6(:, j) = sequence(j) * sequence(:)
       end do
 
-      attention_weights_4 = attention_weights_4 / real(seq_len)
+      attention_weights_6 = attention_weights_6 / real(seq_len)
 
-      do j=5, seq_len
-          y_pred_4 = w_4(1) * sequence(j-2) &
-          + w_4(2) * sequence(j-3) &
-          + w_4(3) * sequence(j-4) &
-          + w_4(4) * sequence(j-5) &
-          + b_4
-          error_4 = y_pred_4 - sequence(j)
-          dw_4(1) = dw_4(1) + error_4 * sequence(j-2) * attention_weights_4(j-2, j)
-          dw_4(2) = dw_4(2) + error_4 * sequence(j-3) * attention_weights_4(j-3, j)
-          dw_4(3) = dw_4(3) + error_4 * sequence(j-4) * attention_weights_4(j-4, j)
-          dw_4(4) = dw_4(4) + error_4 * sequence(j-5) * attention_weights_4(j-5, j)
-          db_4 = db_4 + error_4
+      do j=7, seq_len
+          y_pred_6 = w_6(1) * sequence(j-2) &
+          + w_6(2) * sequence(j-3) &
+          + w_6(3) * sequence(j-4) &
+          + w_6(4) * sequence(j-5) &
+          + w_6(5) * sequence(j-6) &
+          + w_6(6) * sequence(j-7) &
+          + b_6
+          error_6 = y_pred_6 - sequence(j)
+          dw_6(1) = dw_6(1) + error_6 * sequence(j-2) * attention_weights_6(j-2, j)
+          dw_6(2) = dw_6(2) + error_6 * sequence(j-3) * attention_weights_6(j-3, j)
+          dw_6(3) = dw_6(3) + error_6 * sequence(j-4) * attention_weights_6(j-4, j)
+          dw_6(4) = dw_6(4) + error_6 * sequence(j-5) * attention_weights_6(j-5, j)
+          dw_6(5) = dw_6(5) + error_6 * sequence(j-6) * attention_weights_6(j-6, j)
+          dw_6(6) = dw_6(6) + error_6 * sequence(j-7) * attention_weights_6(j-7, j)
+          db_6 = db_6 + error_6
       end do
 
-      dw_4 = dw_4 / (seq_len - 4)
-      db_4 = db_4 / (seq_len - 4)
+      dw_6 = dw_6 / (seq_len - 6)
+      db_6 = db_6 / (seq_len - 6)
 
-      t_4 = t_4 + 1.0_dp
-      mt_4 = beta1_4 * mt_4 + (1.0_dp - beta1_4) * dw_4
-      vt_4 = beta2_4 * vt_4 + (1.0_dp - beta2_4) * (dw_4**2)
-      m_hat_4 = mt_4 / (1.0_dp - beta1_4**t_4)
-      v_hat_4 = vt_4 / (1.0_dp - beta2_4**t_4)
-      denom_4 = sqrt(v_hat_4) + epsilon
-      w_4 = w_4 - alpha_4 * m_hat_4 / denom_4
-      b_4 = b_4 - alpha_4 * db_4
+      t_6 = t_6 + 1.0_dp
+      mt_6 = beta1_6 * mt_6 + (1.0_dp - beta1_6) * dw_6
+      vt_6 = beta2_6 * vt_6 + (1.0_dp - beta2_6) * (dw_6**2)
+      m_hat_6 = mt_6 / (1.0_dp - beta1_6**t_6)
+      v_hat_6 = vt_6 / (1.0_dp - beta2_6**t_6)
+      denom_6 = sqrt(v_hat_6) + epsilon
+      w_6 = w_6 - alpha_6 * m_hat_6 / denom_6
+      b_6 = b_6 - alpha_6 * db_6
 
   end do
 
-  y_pred_4 = w_4(1) * sequence(seq_len-2) &
-      + w_4(2) * sequence(seq_len-3) &
-      + w_4(3) * sequence(seq_len-4) &
-      + w_4(4) * sequence(seq_len-5) &
-      + b_4
+  y_pred_6 = w_6(1) * sequence(seq_len-2) &
+      + w_6(2) * sequence(seq_len-3) &
+      + w_6(3) * sequence(seq_len-4) &
+      + w_6(4) * sequence(seq_len-5) &
+      + w_6(5) * sequence(seq_len-6) &
+      + w_6(6) * sequence(seq_len-7) &
+      + b_6
 
-  end subroutine ai_4
+  end subroutine ai
 
-  subroutine ai_7()
+  subroutine rwi()
 
-  b_7 = 0.0_dp
-  db_7 = 0.0_dp
-  w_7 = 0.0_dp
-  t_7 = 0.0_dp
-  mt_7 = 0.0_dp
-  t_7 = 0.0_dp
+ost_0 = sequence_3(seq_len)
+ost_1 = sequence_3(seq_len-1)
+ost_2 = sequence_3(seq_len-2)
+ost_3 = sequence_3(seq_len-3)
+ost_4 = sequence_3(seq_len-4)
+ost_5 = sequence_3(seq_len-5)
+ost_6 = sequence_3(seq_len-6)
+ost_7 = sequence_3(seq_len-7)
+ost_8 = sequence_3(seq_len-8)
 
-  allocate(attention_weights_7(seq_len, seq_len))
-  attention_weights_7 = 0.0_dp
+tr_0 = abs(ost_0 - ost_1)
+tr_1 = abs(ost_1 - ost_2)
+tr_2 = abs(ost_2 - ost_3)
+tr_3 = abs(ost_3 - ost_4)
+tr_4 = abs(ost_4 - ost_5)
+tr_5 = abs(ost_5 - ost_6)
+tr_6 = abs(ost_6 - ost_7)
+tr_7 = abs(ost_7 - ost_8)
 
-  do i=1, iterations
+atr_2 = (tr_0 + tr_1) / 2
+atr_3 = (tr_0 + tr_1 + tr_2) / 3
+atr_4 = (tr_0 + tr_1 + tr_2 + tr_3) / 4
+atr_5 = (tr_0 + tr_1 + tr_2 + tr_3 + tr_4) / 5
+atr_6 = (tr_0 + tr_1 + tr_2 + tr_3 + tr_4 + tr_5) / 6
 
-      dw_7 = 0.0_dp
+atr_2_ex1 = (tr_1 + tr_2) / 2
+atr_3_ex1 = (tr_1 + tr_2 + tr_3) / 3
+atr_4_ex1 = (tr_1 + tr_2 + tr_3 + tr_4) / 4
+atr_5_ex1 = (tr_1 + tr_2 + tr_3 + tr_4 + tr_5) / 5
+atr_6_ex1 = (tr_1 + tr_2 + tr_3 + tr_4 + tr_5 + tr_6) / 6
 
-      do j = 1, seq_len
-        attention_weights_7(:, j) = sequence(j) * sequence(:)
-      end do
+atr_2_ex2 = (tr_2 + tr_3) / 2
+atr_3_ex2 = (tr_2 + tr_3 + tr_4) / 3
+atr_4_ex2 = (tr_2 + tr_3 + tr_4 + tr_5) / 4
+atr_5_ex2 = (tr_2 + tr_3 + tr_4 + tr_5 + tr_6) / 5
+atr_6_ex2 = (tr_2 + tr_3 + tr_4 + tr_5 + tr_6 + tr_7) / 6
 
-      attention_weights_7 = attention_weights_7 / real(seq_len)
+rwi_h_2 = (ost_0 - ost_1) / (atr_2 * sqrt(2.0))
+rwi_h_3 = (ost_0 - ost_2) / (atr_3 * sqrt(3.0))
+rwi_h_4 = (ost_0 - ost_3) / (atr_4 * sqrt(4.0))
+rwi_h_5 = (ost_0 - ost_4) / (atr_5 * sqrt(5.0))
+rwi_h_6 = (ost_0 - ost_5) / (atr_6 * sqrt(6.0))
 
-      do j=8, seq_len
-          y_pred_7 = w_7(1) * sequence(j-2) &
-          + w_7(2) * sequence(j-3) &
-          + w_7(3) * sequence(j-4) &
-          + w_7(4) * sequence(j-5) &
-          + w_7(5) * sequence(j-6) &
-          + w_7(6) * sequence(j-7) &
-          + w_7(7) * sequence(j-8) &
-          + b_7
-          error_7 = y_pred_7 - sequence(j)
-          dw_7(1) = dw_7(1) + error_7 * sequence(j-2) * attention_weights_7(j-2, j)
-          dw_7(2) = dw_7(2) + error_7 * sequence(j-3) * attention_weights_7(j-3, j)
-          dw_7(3) = dw_7(3) + error_7 * sequence(j-4) * attention_weights_7(j-4, j)
-          dw_7(4) = dw_7(4) + error_7 * sequence(j-5) * attention_weights_7(j-5, j)
-          dw_7(5) = dw_7(5) + error_7 * sequence(j-6) * attention_weights_7(j-6, j)
-          dw_7(6) = dw_7(6) + error_7 * sequence(j-7) * attention_weights_7(j-7, j)
-          dw_7(7) = dw_7(7) + error_7 * sequence(j-8) * attention_weights_7(j-8, j)
-          db_7 = db_7 + error_7
-      end do
+rwi_l_2 = (ost_1 - ost_0) / (atr_2 * sqrt(2.0))
+rwi_l_3 = (ost_2 - ost_0) / (atr_3 * sqrt(3.0))
+rwi_l_4 = (ost_3 - ost_0) / (atr_4 * sqrt(4.0))
+rwi_l_5 = (ost_4 - ost_0) / (atr_5 * sqrt(5.0))
+rwi_l_6 = (ost_5 - ost_0) / (atr_6 * sqrt(6.0))
 
-      dw_7 = dw_7 / (seq_len - 7)
-      db_7 = db_7 / (seq_len - 7)
+rwi_h_2_ex1 = (ost_1 - ost_2) / (atr_2_ex1 * sqrt(2.0))
+rwi_h_3_ex1 = (ost_1 - ost_3) / (atr_3_ex1 * sqrt(3.0))
+rwi_h_4_ex1 = (ost_1 - ost_4) / (atr_4_ex1 * sqrt(4.0))
+rwi_h_5_ex1 = (ost_1 - ost_5) / (atr_5_ex1 * sqrt(5.0))
+rwi_h_6_ex1 = (ost_1 - ost_6) / (atr_6_ex1 * sqrt(6.0))
 
-      t_7 = t_7 + 1.0_dp
-      mt_7 = beta1_7 * mt_7 + (1.0_dp - beta1_7) * dw_7
-      vt_7 = beta2_7 * vt_7 + (1.0_dp - beta2_7) * (dw_7**2)
-      m_hat_7 = mt_7 / (1.0_dp - beta1_7**t_7)
-      v_hat_7 = vt_7 / (1.0_dp - beta2_7**t_7)
-      denom_7 = sqrt(v_hat_7) + epsilon
-      w_7 = w_7 - alpha_7 * m_hat_7 / denom_7
-      b_7 = b_7 - alpha_7 * db_7
+rwi_l_2_ex1 = (ost_2 - ost_1) / (atr_2_ex1 * sqrt(2.0))
+rwi_l_3_ex1 = (ost_3 - ost_1) / (atr_3_ex1 * sqrt(3.0))
+rwi_l_4_ex1 = (ost_4 - ost_1) / (atr_4_ex1 * sqrt(4.0))
+rwi_l_5_ex1 = (ost_5 - ost_1) / (atr_5_ex1 * sqrt(5.0))
+rwi_l_6_ex1 = (ost_6 - ost_1) / (atr_6_ex1 * sqrt(6.0))
 
-  end do
+rwi_h_2_ex2 = (ost_2 - ost_3) / (atr_2_ex2 * sqrt(2.0))
+rwi_h_3_ex2 = (ost_2 - ost_4) / (atr_3_ex2 * sqrt(3.0))
+rwi_h_4_ex2 = (ost_2 - ost_5) / (atr_4_ex2 * sqrt(4.0))
+rwi_h_5_ex2 = (ost_2 - ost_6) / (atr_5_ex2 * sqrt(5.0))
+rwi_h_6_ex2 = (ost_2 - ost_7) / (atr_6_ex2 * sqrt(6.0))
 
-  y_pred_7 = w_7(1) * sequence(seq_len-2) &
-      + w_7(2) * sequence(seq_len-3) &
-      + w_7(3) * sequence(seq_len-4) &
-      + w_7(4) * sequence(seq_len-5) &
-      + w_7(5) * sequence(seq_len-6) &
-      + w_7(6) * sequence(seq_len-7) &
-      + w_7(7) * sequence(seq_len-8) &
-      + b_7
+rwi_l_2_ex2 = (ost_3 - ost_2) / (atr_2_ex2 * sqrt(2.0))
+rwi_l_3_ex2 = (ost_4 - ost_2) / (atr_3_ex2 * sqrt(3.0))
+rwi_l_4_ex2 = (ost_5 - ost_2) / (atr_4_ex2 * sqrt(4.0))
+rwi_l_5_ex2 = (ost_6 - ost_2) / (atr_5_ex2 * sqrt(5.0))
+rwi_l_6_ex2 = (ost_7 - ost_2) / (atr_6_ex2 * sqrt(6.0))
 
-  end subroutine ai_7
+rwi_h_6_0 = max(rwi_h_2, rwi_h_3, rwi_h_4, rwi_h_5, rwi_h_6)
+rwi_l_6_0 = max(rwi_l_2, rwi_l_3, rwi_l_4, rwi_l_5, rwi_l_6)
 
-  subroutine ai_8()
+rwi_h_6_1 = max(rwi_h_2_ex1, rwi_h_3_ex1, rwi_h_4_ex1, rwi_h_5_ex1, rwi_h_6_ex1)
+rwi_l_6_1 = max(rwi_l_2_ex1, rwi_l_3_ex1, rwi_l_4_ex1, rwi_l_5_ex1, rwi_l_6_ex1)
 
-  b_8 = 0.0_dp
-  db_8 = 0.0_dp
-  w_8 = 0.0_dp
-  t_8 = 0.0_dp
-  mt_8 = 0.0_dp
-  t_8 = 0.0_dp
+rwi_h_6_2 = max(rwi_h_2_ex2, rwi_h_3_ex2, rwi_h_4_ex2, rwi_h_5_ex2, rwi_h_6_ex2)
+rwi_l_6_2 = max(rwi_l_2_ex2, rwi_l_3_ex2, rwi_l_4_ex2, rwi_l_5_ex2, rwi_l_6_ex2)
 
-  allocate(attention_weights_8(seq_len, seq_len))
-  attention_weights_8 = 0.0_dp
+  end subroutine rwi
 
-  do i=1, iterations
+  subroutine so()
 
-      dw_8 = 0.0_dp
+high_6 = max(ost_0, ost_1, ost_2, ost_3, ost_4, ost_5)
+low_6 = min(ost_0, ost_1, ost_2, ost_3, ost_4, ost_5)
 
-      do j = 1, seq_len
-        attention_weights_8(:, j) = sequence(j) * sequence(:)
-      end do
+high_6_1 = max(ost_1, ost_2, ost_3, ost_4, ost_5, ost_6)
+low_6_1 = min(ost_1, ost_2, ost_3, ost_4, ost_5, ost_6)
+ 
+high_6_2 = max(ost_2, ost_3, ost_4, ost_5, ost_6, ost_7)
+low_6_2 = min(ost_2, ost_3, ost_4, ost_5, ost_6, ost_7)
 
-      attention_weights_8 = attention_weights_8 / real(seq_len)
+k_0 = (ost_0 - low_6) / (high_6 - low_6) * 100
+k_1 = (ost_1 - low_6_1) / (high_6_1 - low_6_1) * 100
+k_2 = (ost_2 - low_6_2) / (high_6_2 - low_6_2) * 100
 
-      do j=9, seq_len
-          y_pred_8 = w_8(1) * sequence(j-2) &
-          + w_8(2) * sequence(j-3) &
-          + w_8(3) * sequence(j-4) &
-          + w_8(4) * sequence(j-5) &
-          + w_8(5) * sequence(j-6) &
-          + w_8(6) * sequence(j-7) &
-          + w_8(7) * sequence(j-8) &
-          + w_8(8) * sequence(j-9) &
-          + b_8
-          error_8 = y_pred_8 - sequence(j)
-          dw_8(1) = dw_8(1) + error_8 * sequence(j-2) * attention_weights_8(j-2, j)
-          dw_8(2) = dw_8(2) + error_8 * sequence(j-3) * attention_weights_8(j-3, j)
-          dw_8(3) = dw_8(3) + error_8 * sequence(j-4) * attention_weights_8(j-4, j)
-          dw_8(4) = dw_8(4) + error_8 * sequence(j-5) * attention_weights_8(j-5, j)
-          dw_8(5) = dw_8(5) + error_8 * sequence(j-6) * attention_weights_8(j-6, j)
-          dw_8(6) = dw_8(6) + error_8 * sequence(j-7) * attention_weights_8(j-7, j)
-          dw_8(7) = dw_8(7) + error_8 * sequence(j-8) * attention_weights_8(j-8, j)
-          dw_8(8) = dw_8(8) + error_8 * sequence(j-9) * attention_weights_8(j-9, j)
-          db_8 = db_8 + error_8
-      end do
+so_6 = (k_0 + k_1 + k_2) / 3
 
-      dw_8 = dw_8 / (seq_len - 8)
-      db_8 = db_8 / (seq_len - 8)
-
-      t_8 = t_8 + 1.0_dp
-      mt_8 = beta1_8 * mt_8 + (1.0_dp - beta1_8) * dw_8
-      vt_8 = beta2_8 * vt_8 + (1.0_dp - beta2_8) * (dw_8**2)
-      m_hat_8 = mt_8 / (1.0_dp - beta1_8**t_8)
-      v_hat_8 = vt_8 / (1.0_dp - beta2_8**t_8)
-      denom_8 = sqrt(v_hat_8) + epsilon
-      w_8 = w_8 - alpha_8 * m_hat_8 / denom_8
-      b_8 = b_8 - alpha_8 * db_8
-
-  end do
-
-  y_pred_8 = w_8(1) * sequence(seq_len-2) &
-      + w_8(2) * sequence(seq_len-3) &
-      + w_8(3) * sequence(seq_len-4) &
-      + w_8(4) * sequence(seq_len-5) &
-      + w_8(5) * sequence(seq_len-6) &
-      + w_8(6) * sequence(seq_len-7) &
-      + w_8(7) * sequence(seq_len-8) &
-      + w_8(8) * sequence(seq_len-9) &
-      + b_8
-
-  end subroutine ai_8
+  end subroutine so
 
 end program BasketballProphet_AI
