@@ -111,7 +111,7 @@ sequence_3 = sequence_1 / sequence_2
   deallocate(sequence_3)
 
   write(*,'(a)') 'Neural Network-Based Sport Predictions'
-  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.4.0 30.04.2024'
+  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.4.1 01.05.2024'
   write(*,'(a)') 'Copyright © 2023-present, Piotr Bajdek'
   print *,''
   write(*,'(a,a,a,a)') 'Loaded file ', grey, arg_1, reset
@@ -225,16 +225,18 @@ if (result_1_6 > result_2_6 .and. &
     (so_6 < 50.0 .or. rwi_h_6_0 > rwi_l_6_0) .and. &
     so_6 < 85.0 .and. &
     (so_6 < 60 .or. rwi_h_6_0 > 1.0) .and. &
+    (so_6 < 50 .or. rwi_h_6_1 > 0.5 .or. rwi_h_6_2 > 0.7) .and. &
     (rwi_h_6_2 > 0.0 .or. rwi_h_6_1 > 1.0) .and. &
     rwi_h_6_0 > -0.5 .and. rwi_h_6_1 > -0.5) then
-  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'A', reset, ' >85% prob. 🏆'
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'A', reset, ' ≈85% prob. 🏆'
 else if (result_1_6 < result_2_6 .and. &
     (so_6 > 50.0 .or. rwi_l_6_0 > rwi_h_6_0) .and. &
     so_6 > 15.0 .and. &
     (so_6 > 40.0 .or. rwi_l_6_0 > 1.0) .and. &
+    (so_6 > 50 .or. rwi_l_6_1 > 0.5 .or. rwi_l_6_2 > 0.7) .and. &
     (rwi_l_6_2 > 0.0 .or. rwi_l_6_1 > 1.0) .and. &
     rwi_l_6_0 > -0.5 .and. rwi_l_6_1 > -0.5) then
-  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'B', reset, ' >85% prob. 🏆'
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'B', reset, ' ≈85% prob. 🏆'
 else
   write(*,'(a)') 'Predicted winner: uncertain'
 end if
