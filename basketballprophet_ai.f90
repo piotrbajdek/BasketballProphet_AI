@@ -21,7 +21,7 @@ program BasketballProphet_AI
   real(dp) :: epsilon = 1.0E-8_dp
   integer :: i, j, iostat, seq_len, iterations = 12500
   real :: result_1_6, result_2_6
-  real(qp) :: ost_0, ost_1, ost_2, ost_3, ost_4, ost_5, ost_6, ost_7, ost_8
+  real(qp) :: ost_0, ost_1, ost_2, ost_3, ost_4, ost_5, ost_6, ost_7, ost_8, ost_9
   real(qp) :: tr_0, tr_1, tr_2, tr_3, tr_4, tr_5, tr_6, tr_7
   real(qp) :: atr_2, atr_3, atr_4, atr_5, atr_6
   real(qp) :: atr_2_ex1, atr_3_ex1, atr_4_ex1, atr_5_ex1, atr_6_ex1
@@ -34,6 +34,8 @@ program BasketballProphet_AI
   real(qp) :: rwi_l_2_ex2, rwi_l_3_ex2, rwi_l_4_ex2, rwi_l_5_ex2, rwi_l_6_ex2, rwi_l_7_ex2, rwi_l_8_ex2, rwi_l_9_ex2
   real(qp) :: rwi_h_6_0, rwi_l_6_0, rwi_h_6_1, rwi_l_6_1, rwi_h_6_2, rwi_l_6_2
   real(dp) :: high_6, low_6, high_6_1, low_6_1, high_6_2, low_6_2, k_0, k_1, k_2, so_6
+  real(dp) :: aad_9, sma_9_0, sma_9_1, band_u, band_l
+  real(dp) :: v_0, v_1, v_2, v_3, v_4, v_5, v_6, v_7, v_8
 
   character(len=4) :: reset = ''//achar(27)//'[0m'
   character(len=5) :: red = ''//achar(27)//'[31m'
@@ -41,7 +43,7 @@ program BasketballProphet_AI
   character(len=5) :: brown = ''//achar(27)//'[33m'
   character(len=11) :: grey = ''//achar(27)//'[38;5;246m'
 
-  character(len=5) :: a_col_6, b_col_6, kol_h_0, kol_l_0, kol_h_1, kol_l_1, kol_so_6
+  character(len=5) :: a_col_6, b_col_6, kol_h_0, kol_l_0, kol_h_1, kol_l_1, kol_so_6, kol_vol_u, kol_vol_l
 
   if (command_argument_count() == 0) then
     write(*,'(a)') 'No input file selected!'
@@ -111,7 +113,7 @@ sequence_3 = sequence_1 / sequence_2
   deallocate(sequence_3)
 
   write(*,'(a)') 'Neural Network-Based Sport Predictions'
-  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.4.1 01.05.2024'
+  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.5.0 03.05.2024'
   write(*,'(a)') 'Copyright © 2023-present, Piotr Bajdek'
   print *,''
   write(*,'(a,a,a,a)') 'Loaded file ', grey, arg_1, reset
@@ -165,37 +167,77 @@ end if
 
   print *,''
 
-if (rwi_h_6_0 > 0.0 .and. rwi_h_6_0 < 1.0) then
+    call bands()
+
+if (ost_0 >= band_u) then
+  kol_vol_u = red
+else if (ost_0 + atr_4 < band_u) then
+  kol_vol_u = green
+else
+  kol_vol_u = brown
+end if
+
+if (ost_0 < band_l) then
+  kol_vol_l = green
+else if (ost_0 - atr_4 > band_l) then
+  kol_vol_l = red
+else
+  kol_vol_l = brown
+end if
+
+if (ost_0 >= 1.0) then
+  write(*,'(a,F0.3,a,a,F0.2,a,a,a,a,F0.2,a)') 'A/B ratio: ', ost_0, ' Volat. Bs: ', &
+  kol_vol_u, band_u, reset, ', ', kol_vol_l, '0', band_l, reset
+else
+  write(*,'(a,F0.3,a,a,F0.2,a,a,a,a,F0.2,a)') 'A/B ratio: 0', ost_0, ' Volat. Bs: ', &
+  kol_vol_u, band_u, reset, ', ', kol_vol_l, '0', band_l, reset
+end if
+
+  print *,''
+
+if (rwi_h_6_0 <= -1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (present):', rwi_h_6_0, '  ', kol_h_0, st_h_0, reset
+else if (rwi_h_6_0 > 0.0 .and. rwi_h_6_0 < 1.0) then
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (present): 0', rwi_h_6_0, '  ', kol_h_0, st_h_0, reset
 else
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (present): ', rwi_h_6_0, '  ', kol_h_0, st_h_0, reset
 end if
 
-if (rwi_l_6_0 > 0.0 .and. rwi_l_6_0 < 1.0) then
+if (rwi_l_6_0 <= -1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (present):', rwi_l_6_0, '  ', kol_l_0, st_l_0, reset
+else if (rwi_l_6_0 > 0.0 .and. rwi_l_6_0 < 1.0) then
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (present): 0', rwi_l_6_0, '  ', kol_l_0, st_l_0, reset
 else
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (present): ', rwi_l_6_0, '  ', kol_l_0, st_l_0, reset
 end if
 
-if (rwi_h_6_1 > 0.0 .and. rwi_h_6_1 < 1.0) then
+if (rwi_h_6_1 <= -1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -1):', rwi_h_6_1, '  ',  kol_h_1, st_h_1, reset
+else if (rwi_h_6_1 > 0.0 .and. rwi_h_6_1 < 1.0) then
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -1): 0', rwi_h_6_1, '  ',  kol_h_1, st_h_1, reset
 else
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -1): ', rwi_h_6_1, '  ',  kol_h_1, st_h_1, reset
 end if
 
-if (rwi_l_6_1 > 0.0 .and. rwi_l_6_1 < 1.0) then
+if (rwi_l_6_1 <= -1.0) then
+  write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -1):', rwi_l_6_1, '  ', kol_l_1, st_l_1, reset
+else if (rwi_l_6_1 > 0.0 .and. rwi_l_6_1 < 1.0) then
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -1): 0', rwi_l_6_1, '  ', kol_l_1, st_l_1, reset
 else
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -1): ', rwi_l_6_1, '  ', kol_l_1, st_l_1, reset
 end if
 
-if (rwi_h_6_2 > 0.0 .and. rwi_h_6_2 < 1.0) then
+if (rwi_h_6_2 <= -1.0) then
+  write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -2):', rwi_h_6_2
+else if (rwi_h_6_2 > 0.0 .and. rwi_h_6_2 < 1.0) then
   write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -2): 0', rwi_h_6_2
 else
   write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', green, 'H', reset, ' (game -2): ', rwi_h_6_2
 end if
 
-if (rwi_l_6_2 > 0.0 .and. rwi_l_6_2 < 1.0) then
+if (rwi_l_6_2 <= -1.0) then
+  write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -2):', rwi_l_6_2
+else if (rwi_l_6_2 > 0.0 .and. rwi_l_6_2 < 1.0) then
   write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -2): 0', rwi_l_6_2
 else
   write(*,'(a,a,a,a,a,F0.5)') 'Team A/B RWI 6 ', red, 'L', reset, ' (game -2): ', rwi_l_6_2
@@ -221,22 +263,30 @@ end if
 
   print *,''
 
-if (result_1_6 > result_2_6 .and. &
+if ((result_1_6 > result_2_6 .and. &
     (so_6 < 50.0 .or. rwi_h_6_0 > rwi_l_6_0) .and. &
-    so_6 < 85.0 .and. &
+    so_6 < 85.0 .and. ost_0 < band_u .and. &
     (so_6 < 60 .or. rwi_h_6_0 > 1.0) .and. &
     (so_6 < 50 .or. rwi_h_6_1 > 0.5 .or. rwi_h_6_2 > 0.7) .and. &
     (rwi_h_6_2 > 0.0 .or. rwi_h_6_1 > 1.0) .and. &
-    rwi_h_6_0 > -0.5 .and. rwi_h_6_1 > -0.5) then
-  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'A', reset, ' ≈85% prob. 🏆'
-else if (result_1_6 < result_2_6 .and. &
+    rwi_h_6_0 > -0.5 .and. rwi_h_6_1 > -0.5 .and. &
+    (ost_0 < 1.06 .or. rwi_h_6_0 > rwi_l_6_0)) &
+    .or. &
+    (so_6 < 30.0 .and. ost_0 < band_l .and. &
+    rwi_h_6_0 < 0.0 .and. rwi_l_6_0 > 1.0)) then
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'A', reset, ' ≈90% prob. 🏆'
+else if ((result_1_6 < result_2_6 .and. &
     (so_6 > 50.0 .or. rwi_l_6_0 > rwi_h_6_0) .and. &
-    so_6 > 15.0 .and. &
+    so_6 > 15.0 .and. ost_0 > band_l .and. &
     (so_6 > 40.0 .or. rwi_l_6_0 > 1.0) .and. &
     (so_6 > 50 .or. rwi_l_6_1 > 0.5 .or. rwi_l_6_2 > 0.7) .and. &
     (rwi_l_6_2 > 0.0 .or. rwi_l_6_1 > 1.0) .and. &
-    rwi_l_6_0 > -0.5 .and. rwi_l_6_1 > -0.5) then
-  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'B', reset, ' ≈85% prob. 🏆'
+    rwi_l_6_0 > -0.5 .and. rwi_l_6_1 > -0.5 .and. &
+    (ost_0 > 0.94 .or. rwi_l_6_0 > rwi_h_6_0)) &
+    .or. &
+    (so_6 > 70.0 .and. ost_0 > band_u .and. &
+    rwi_l_6_0 < 0.0 .and. rwi_h_6_0 > 1.0)) then
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'B', reset, ' ≈90% prob. 🏆'
 else
   write(*,'(a)') 'Predicted winner: uncertain'
 end if
@@ -318,6 +368,7 @@ ost_5 = sequence_3(seq_len-5)
 ost_6 = sequence_3(seq_len-6)
 ost_7 = sequence_3(seq_len-7)
 ost_8 = sequence_3(seq_len-8)
+ost_9 = sequence_3(seq_len-9)
 
 tr_0 = abs(ost_0 - ost_1)
 tr_1 = abs(ost_1 - ost_2)
@@ -411,5 +462,36 @@ k_2 = (ost_2 - low_6_2) / (high_6_2 - low_6_2) * 100
 so_6 = (k_0 + k_1 + k_2) / 3
 
   end subroutine so
+
+  subroutine bands()
+
+sma_9_0 = (ost_0 + ost_1 + ost_2 + ost_3 + ost_4 + ost_5 + ost_6 + ost_7 + ost_8) / 9
+sma_9_1 = (ost_1 + ost_2 + ost_3 + ost_4 + ost_5 + ost_6 + ost_7 + ost_8 + ost_9) / 9
+
+v_0 = abs(sma_9_0 - ost_0)
+v_1 = abs(sma_9_0 - ost_1)
+v_2 = abs(sma_9_0 - ost_2)
+v_3 = abs(sma_9_0 - ost_3)
+v_4 = abs(sma_9_0 - ost_4)
+v_5 = abs(sma_9_0 - ost_5)
+v_6 = abs(sma_9_0 - ost_6)
+v_7 = abs(sma_9_0 - ost_7)
+v_8 = abs(sma_9_0 - ost_8)
+
+aad_9 = (v_0 + v_1 + v_2 + v_3 + v_4 + v_5 + v_6 + v_7 + v_8) / 9
+
+if (sma_9_0 <= sma_9_1) then
+    band_u = sma_9_0 + (aad_9 * 1.46557)
+else
+    band_u = sma_9_0 + (aad_9 * 2.46557)
+end if
+
+if (sma_9_0 >= sma_9_1) then
+    band_l = sma_9_0 - (aad_9 * 1.46557)
+else
+    band_l = sma_9_0 - (aad_9 * 2.46557)
+end if
+
+  end subroutine bands
 
 end program BasketballProphet_AI
