@@ -30,7 +30,7 @@ A: Not really. Due to the inverse correlation between the predictability of resu
 
 Q: Being so, why do you develop it?
 
-A: It serves as a testing ground for a scientific project.
+A: It serves as a testing ground for a scientific project in computational biology.
 
 ## USAGE
 
