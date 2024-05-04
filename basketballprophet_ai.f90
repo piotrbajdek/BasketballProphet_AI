@@ -8,7 +8,7 @@ program BasketballProphet_AI
   implicit none
   character(len=68) :: arg_1
   character(256) :: line
-  character(len=3) :: st_h_0, st_l_0, st_h_1, st_l_1
+  character(len=3) :: st_h_0, st_l_0, st_h_1, st_l_1, st_sma_9
   integer, parameter :: dp = selected_real_kind(15, 307)
   integer, parameter :: qp = selected_real_kind(33, 4931)
   real(dp), dimension(:,:), allocatable :: attention_weights_6
@@ -19,9 +19,10 @@ program BasketballProphet_AI
   real(dp) :: mt_6(6) = 0.0_dp, vt_6(6) = 0.0_dp, m_hat_6(6), v_hat_6(6), denom_6(6)
   real(dp) :: db_6, y_pred_6, error_6
   real(dp) :: epsilon = 1.0E-8_dp
-  integer :: i, j, iostat, seq_len, iterations = 12500
+  integer :: i, j, iostat, seq_len, iterations = 12500, stop
   real :: result_1_6, result_2_6
-  real(qp) :: ost_0, ost_1, ost_2, ost_3, ost_4, ost_5, ost_6, ost_7, ost_8, ost_9
+  real(qp) :: ost_0, ost_1, ost_2, ost_3, ost_4, ost_5, ost_6, ost_7, ost_8, ost_9, ost_10, ost_11, ost_12, ost_13
+  real(qp) :: ost_14, ost_15, ost_16, ost_17, ost_18
   real(qp) :: tr_0, tr_1, tr_2, tr_3, tr_4, tr_5, tr_6, tr_7
   real(qp) :: atr_2, atr_3, atr_4, atr_5, atr_6
   real(qp) :: atr_2_ex1, atr_3_ex1, atr_4_ex1, atr_5_ex1, atr_6_ex1
@@ -33,8 +34,9 @@ program BasketballProphet_AI
   real(qp) :: rwi_h_2_ex2, rwi_h_3_ex2, rwi_h_4_ex2, rwi_h_5_ex2, rwi_h_6_ex2, rwi_h_7_ex2, rwi_h_8_ex2, rwi_h_9_ex2
   real(qp) :: rwi_l_2_ex2, rwi_l_3_ex2, rwi_l_4_ex2, rwi_l_5_ex2, rwi_l_6_ex2, rwi_l_7_ex2, rwi_l_8_ex2, rwi_l_9_ex2
   real(qp) :: rwi_h_6_0, rwi_l_6_0, rwi_h_6_1, rwi_l_6_1, rwi_h_6_2, rwi_l_6_2
-  real(dp) :: high_6, low_6, high_6_1, low_6_1, high_6_2, low_6_2, k_0, k_1, k_2, so_6
-  real(dp) :: aad_9, sma_9_0, sma_9_1, band_u, band_l
+  real(dp) :: high_4, low_4, high_4_1, low_4_1, high_4_2, low_4_2, so_4
+  real(dp) :: high_6, low_6, high_6_1, low_6_1, high_6_2, low_6_2, so_6, k_0, k_1, k_2
+  real(dp) :: aad_9, sma_9_0, sma_9_1, band_u, band_l, sma_13_0, sma_19_0
   real(dp) :: v_0, v_1, v_2, v_3, v_4, v_5, v_6, v_7, v_8
 
   character(len=4) :: reset = ''//achar(27)//'[0m'
@@ -43,7 +45,8 @@ program BasketballProphet_AI
   character(len=5) :: brown = ''//achar(27)//'[33m'
   character(len=11) :: grey = ''//achar(27)//'[38;5;246m'
 
-  character(len=5) :: a_col_6, b_col_6, kol_h_0, kol_l_0, kol_h_1, kol_l_1, kol_so_6, kol_vol_u, kol_vol_l
+  character(len=5) :: a_col_6, b_col_6, kol_h_0, kol_l_0, kol_h_1, kol_l_1, kol_so_4, kol_so_6, kol_vol_u, kol_vol_l
+  character(len=5) :: kol_st_sma_9
 
   if (command_argument_count() == 0) then
     write(*,'(a)') 'No input file selected!'
@@ -113,7 +116,7 @@ sequence_3 = sequence_1 / sequence_2
   deallocate(sequence_3)
 
   write(*,'(a)') 'Neural Network-Based Sport Predictions'
-  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.5.0 03.05.2024'
+  write(*,'(a,a,a,a,a)') grey, 'BasketballProphet AI', reset, ' v0.6.0 04.05.2024'
   write(*,'(a)') 'Copyright © 2023-present, Piotr Bajdek'
   print *,''
   write(*,'(a,a,a,a)') 'Loaded file ', grey, arg_1, reset
@@ -195,6 +198,37 @@ end if
 
   print *,''
 
+if (sma_9_0 > sma_9_1) then
+  kol_st_sma_9 = green
+  st_sma_9 = '↑'
+else if (sma_9_0 < sma_9_1) then
+  kol_st_sma_9 = red
+  st_sma_9 = '↓'
+else
+  kol_st_sma_9 = brown
+  st_sma_9 = '↕'
+end if
+
+if (sma_9_0 < 1.0 .and. sma_13_0 < 1.0 .and. sma_19_0 < 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: 0', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: 0', sma_13_0, ' MA 19: 0', sma_19_0
+else if (sma_9_0 >= 1.0 .and. sma_13_0 < 1.0 .and. sma_19_0 < 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: ', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: 0', sma_13_0, ' MA 19: 0', sma_19_0
+else if (sma_9_0 < 1.0 .and. sma_13_0 >= 1.0 .and. sma_19_0 < 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: 0', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: ', sma_13_0, ' MA 19: 0', sma_19_0
+else if (sma_9_0 < 1.0 .and. sma_13_0 < 1.0 .and. sma_19_0 >= 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: 0', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: 0', sma_13_0, ' MA 19: ', sma_19_0
+else if (sma_9_0 >= 1.0 .and. sma_13_0 >= 1.0 .and. sma_19_0 < 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: ', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: ', sma_13_0, ' MA 19: 0', sma_19_0
+else if (sma_9_0 >= 1.0 .and. sma_13_0 < 1.0 .and. sma_19_0 >= 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: ', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: 0', sma_13_0, ' MA 19: ', sma_19_0
+else if (sma_9_0 < 1.0 .and. sma_13_0 >= 1.0 .and. sma_19_0 >= 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: 0', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: ', sma_13_0, ' MA 19: ', sma_19_0
+else if (sma_9_0 >= 1.0 .and. sma_13_0 >= 1.0 .and. sma_19_0 >= 1.0) then
+  write(*,'(a,F0.3,a,a,a,a,F0.3,a,F0.3)') 'MA 9: ', sma_9_0, kol_st_sma_9, st_sma_9, reset, ' MA 13: ', sma_13_0, ' MA 19: ', sma_19_0
+end if
+
+  print *,''
+
 if (rwi_h_6_0 <= -1.0) then
   write(*,'(a,a,a,a,a,F0.5,a,a,a,a)') 'Team A/B RWI 6 ', green, 'H', reset, ' (present):', rwi_h_6_0, '  ', kol_h_0, st_h_0, reset
 else if (rwi_h_6_0 > 0.0 .and. rwi_h_6_0 < 1.0) then
@@ -255,38 +289,72 @@ else
   kol_so_6 = brown
 end if
 
-if (so_6 < 10.0) then
+if (so_4 < 50.0) then
+  kol_so_4 = green
+else if (so_4 > 50.0) then
+  kol_so_4 = red
+else
+  kol_so_4 = brown
+end if
+
+if (so_6 == 0.0) then
+  write(*,'(a,a,a,F0.5,a,a)') 'Stochastic oscillator 6(3): ', kol_so_6, '0', so_6, reset, ' 🏀'
+else if (so_6 == 100.0) then
+  write(*,'(a,a,F0.3,a,a)') 'Stochastic oscillator 6(3): ', kol_so_6, so_6, reset, ' 🏀'
+else if (so_6 < 10.0) then
   write(*,'(a,a,F0.5,a,a)') 'Stochastic oscillator 6(3): ', kol_so_6, so_6, reset, ' 🏀'
 else
   write(*,'(a,a,F0.4,a,a)') 'Stochastic oscillator 6(3): ', kol_so_6, so_6, reset, ' 🏀'
 end if
 
+if (so_4 == 0.0) then
+  write(*,'(a,a,a,F0.5,a,a)') 'Stochastic oscillator 4(3): ', kol_so_4, '0', so_4, reset, ' 🏀'
+else if (so_4 == 100.0) then
+  write(*,'(a,a,F0.3,a,a)') 'Stochastic oscillator 4(3): ', kol_so_4, so_4, reset, ' 🏀'
+else if (so_4 < 10.0) then
+  write(*,'(a,a,F0.5,a,a)') 'Stochastic oscillator 4(3): ', kol_so_4, so_4, reset, ' 🏀'
+else
+  write(*,'(a,a,F0.4,a,a)') 'Stochastic oscillator 4(3): ', kol_so_4, so_4, reset, ' 🏀'
+end if
+
   print *,''
 
-if ((result_1_6 > result_2_6 .and. &
-    (so_6 < 50.0 .or. rwi_h_6_0 > rwi_l_6_0) .and. &
-    so_6 < 85.0 .and. ost_0 < band_u .and. &
+if (sma_9_0 < sma_9_1 .and. ost_0 < sma_13_0 .and. ost_0 < 1.0 .and. ost_0 > 0.925 .and. &
+    sma_9_0 < sma_13_0 .and. sma_13_0 < sma_19_0) then
+  stop = 1
+else if (sma_9_0 > sma_9_1 .and. ost_0 > sma_13_0 .and. ost_0 > 1.0 .and. ost_0 < 1.075 .and. &
+    sma_9_0 > sma_13_0 .and. sma_13_0 > sma_19_0) then
+  stop = -1
+else
+  stop = 0
+end if
+
+if ((result_1_6 > result_2_6 .and. stop <= 0 .and. &
+    (so_4 < 50.0 .or. rwi_h_6_0 > rwi_l_6_0 .or. ost_0 < 0.925) .and. &
+    (so_6 < 50.0 .or. rwi_h_6_0 > 1.0 .or. rwi_l_6_0 < 1.0) .and. &
+    so_4 < 100.0 .and. so_6 < 85.0 .and. ost_0 < band_u .and. &
     (so_6 < 60 .or. rwi_h_6_0 > 1.0) .and. &
     (so_6 < 50 .or. rwi_h_6_1 > 0.5 .or. rwi_h_6_2 > 0.7) .and. &
     (rwi_h_6_2 > 0.0 .or. rwi_h_6_1 > 1.0) .and. &
     rwi_h_6_0 > -0.5 .and. rwi_h_6_1 > -0.5 .and. &
     (ost_0 < 1.06 .or. rwi_h_6_0 > rwi_l_6_0)) &
     .or. &
-    (so_6 < 30.0 .and. ost_0 < band_l .and. &
-    rwi_h_6_0 < 0.0 .and. rwi_l_6_0 > 1.0)) then
-  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'A', reset, ' ≈90% prob. 🏆'
-else if ((result_1_6 < result_2_6 .and. &
-    (so_6 > 50.0 .or. rwi_l_6_0 > rwi_h_6_0) .and. &
-    so_6 > 15.0 .and. ost_0 > band_l .and. &
+    ((ost_0 < band_l .or. (so_4 < 15.0 .and. so_6 < 15.0) .or. so_4 < 1.0) .and. &
+    rwi_h_6_0 < 0.0 .and. rwi_l_6_0 > 1.0 .and. so_6 < 30.0)) then
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'A', reset, ' >90% prob. 🏆'
+else if ((result_1_6 < result_2_6 .and. stop >= 0 .and. &
+    (so_4 > 50.0 .or. rwi_l_6_0 > rwi_h_6_0 .or. ost_0 > 1.075) .and. &
+    (so_6 > 50.0 .or. rwi_l_6_0 > 1.0 .or. rwi_h_6_0 < 1.0) .and. &
+    so_4 > 0.0 .and. so_6 > 15.0 .and. ost_0 > band_l .and. &
     (so_6 > 40.0 .or. rwi_l_6_0 > 1.0) .and. &
     (so_6 > 50 .or. rwi_l_6_1 > 0.5 .or. rwi_l_6_2 > 0.7) .and. &
     (rwi_l_6_2 > 0.0 .or. rwi_l_6_1 > 1.0) .and. &
     rwi_l_6_0 > -0.5 .and. rwi_l_6_1 > -0.5 .and. &
     (ost_0 > 0.94 .or. rwi_l_6_0 > rwi_h_6_0)) &
     .or. &
-    (so_6 > 70.0 .and. ost_0 > band_u .and. &
-    rwi_l_6_0 < 0.0 .and. rwi_h_6_0 > 1.0)) then
-  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'B', reset, ' ≈90% prob. 🏆'
+    ((ost_0 > band_u .or. (so_4 > 85.0 .and. so_6 > 85.0) .or. so_4 > 99.0) .and. &
+    rwi_l_6_0 < 0.0 .and. rwi_h_6_0 > 1.0 .and. so_6 > 70.0)) then
+  write(*,'(a,a,a,a,a)') 'Predicted winner: Team ', green, 'B', reset, ' >90% prob. 🏆'
 else
   write(*,'(a)') 'Predicted winner: uncertain'
 end if
@@ -369,6 +437,15 @@ ost_6 = sequence_3(seq_len-6)
 ost_7 = sequence_3(seq_len-7)
 ost_8 = sequence_3(seq_len-8)
 ost_9 = sequence_3(seq_len-9)
+ost_10 = sequence_3(seq_len-10)
+ost_11 = sequence_3(seq_len-11)
+ost_12 = sequence_3(seq_len-12)
+ost_13 = sequence_3(seq_len-13)
+ost_14 = sequence_3(seq_len-14)
+ost_15 = sequence_3(seq_len-15)
+ost_16 = sequence_3(seq_len-16)
+ost_17 = sequence_3(seq_len-17)
+ost_18 = sequence_3(seq_len-18)
 
 tr_0 = abs(ost_0 - ost_1)
 tr_1 = abs(ost_1 - ost_2)
@@ -446,6 +523,22 @@ rwi_l_6_2 = max(rwi_l_2_ex2, rwi_l_3_ex2, rwi_l_4_ex2, rwi_l_5_ex2, rwi_l_6_ex2)
 
   subroutine so()
 
+
+high_4 = max(ost_0, ost_1, ost_2, ost_3)
+low_4 = min(ost_0, ost_1, ost_2, ost_3)
+
+high_4_1 = max(ost_1, ost_2, ost_3, ost_4)
+low_4_1 = min(ost_1, ost_2, ost_3, ost_4)
+ 
+high_4_2 = max(ost_2, ost_3, ost_4, ost_5)
+low_4_2 = min(ost_2, ost_3, ost_4, ost_5)
+
+k_0 = (ost_0 - low_4) / (high_4 - low_4) * 100
+k_1 = (ost_1 - low_4_1) / (high_4_1 - low_4_1) * 100
+k_2 = (ost_2 - low_4_2) / (high_4_2 - low_4_2) * 100
+
+so_4 = (k_0 + k_1 + k_2) / 3
+
 high_6 = max(ost_0, ost_1, ost_2, ost_3, ost_4, ost_5)
 low_6 = min(ost_0, ost_1, ost_2, ost_3, ost_4, ost_5)
 
@@ -467,6 +560,13 @@ so_6 = (k_0 + k_1 + k_2) / 3
 
 sma_9_0 = (ost_0 + ost_1 + ost_2 + ost_3 + ost_4 + ost_5 + ost_6 + ost_7 + ost_8) / 9
 sma_9_1 = (ost_1 + ost_2 + ost_3 + ost_4 + ost_5 + ost_6 + ost_7 + ost_8 + ost_9) / 9
+
+sma_13_0 = (ost_0 + ost_1 + ost_2 + ost_3 + ost_4 + ost_5 + ost_6 + ost_7 + ost_8 &
+         + ost_9 + ost_10 + ost_11 + ost_12) / 13
+
+sma_19_0 = (ost_0 + ost_1 + ost_2 + ost_3 + ost_4 + ost_5 + ost_6 + ost_7 + ost_8 &
+         + ost_9 + ost_10 + ost_11 + ost_12 + ost_13 + ost_14 + ost_15 + ost_16 &
+         + ost_17 + ost_18) / 19
 
 v_0 = abs(sma_9_0 - ost_0)
 v_1 = abs(sma_9_0 - ost_1)
